@@ -93,6 +93,6 @@ panda = rtb.models.Panda()
 panda.q = panda.qr
 env.add(panda)
 
-follow_lasa_trajectory('Trapezoid')
+follow_lasa_trajectory('GShape')
 
 env.hold()

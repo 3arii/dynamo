@@ -1,0 +1,1 @@
+Epoch 0: Normalized DTWD = 1.213282219175335
