@@ -1,0 +1,1 @@
+Normalized DTWD between two trajectories: 0.06533348064321932\n
