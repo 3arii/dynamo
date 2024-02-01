@@ -32,6 +32,7 @@ class LASA():
         self.mean = np.mean(trajs_np,axis=0)
         self.std = np.std(trajs_np, axis=0)
         self.trajs_normalized = self.normalize(self.trajs_real)
+        print(self.trajs_normalized.shape)
         
         ## Build Train Dataset
         self.train_data = []

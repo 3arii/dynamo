@@ -8,7 +8,7 @@ from torch.utils.data import TensorDataset
 import matplotlib.pyplot as plt
 from euclideanizing_flows.flows import BijectionNet, NaturalGradientDescentVelNet
 from euclideanizing_flows.train_utils import train
-from euclideanizing_flows.plot_utils import visualize_vel
+from euclideanizing_flows.plot_utils import *
 from euclideanizing_flows.data_utils import LASA
 import argparse
 
@@ -63,7 +63,7 @@ eps = 1e-12
 no_cuda = True
 seed = None
 weight_regularizer = 1e-10
-epochs = 100
+epochs = 3
 loss_clip = 1e3
 clip_gradient = True
 clip_value_grad = 0.1
@@ -104,6 +104,8 @@ dataset_list = []
 time_list = []
 expert_traj_list = []
 s0_list = []
+dtwd_values = []
+learner_traj_list = []
 t_final_list = []
 for n in range(len(idx) - 1):
     x_traj = normalize_(x_train[idx[n]:idx[n + 1]])
@@ -175,22 +177,36 @@ else:
 if test_learner_model:
     # Omitted plotting and evaluation code for brevity
     pass
-
-# Assuming expert_traj_list and learner_traj_list contain the trajectories you are interested in
-# and that the dtwd function is correctly implemented as shown previously
-
-# Example of computing and printing DTWD for the first two expert trajectories
-# Make sure you have at least two trajectories in expert_traj_list before running this
+ 
 if len(expert_traj_list) >= 2:
     # Convert the tensors to numpy arrays if they are not already
-    traj1 = expert_traj_list[0].detach().cpu().numpy()
-    traj2 = expert_traj_list[1].detach().cpu().numpy()
 
-    # Compute the DTWD value
-    dtwd_value = dtwd(traj1, traj2)
+    for n in range(n_experts):
+        s0 = s0_list[n]
+        t_final = t_final_list[n]
+        learner_traj = generate_trajectories(learner_model, s0, order=1, return_label=False, t_step=dt, t_final=t_final,
+                                             method='euler')
+
+        learner_traj_list.append(learner_traj)
+
+    learner_traj = generate_trajectories(learner_model, s0, order=1, return_label=False, t_step=dt, t_final=t_final,
+                                             method='euler')
+
+    for i in range(3):
+        traj1 = learner_traj_list[i].detach().cpu().numpy()
+        traj2 = expert_traj_list[i].detach().cpu().numpy()
+
+        # Compute the DTWD value
+        dtwd_value = dtwd(traj1, traj2)
+
+        print(dtwd_value)
+
+        dtwd_values.append(dtwd_value)
+
 
     # Print the DTWD value
-    print(f"DTWD between the first two trajectories: {dtwd_value}")
+    print(f"DTWD between the first two trajectories: {dtwd_values}")
+    print(f"Mean: {np.mean(dtwd_values)}")
 else:
     print("Not enough trajectories for DTWD computation.")
 
