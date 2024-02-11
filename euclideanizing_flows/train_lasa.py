@@ -10,6 +10,7 @@ from euclideanizing_flows.flows import BijectionNet, NaturalGradientDescentVelNe
 from euclideanizing_flows.train_utils import train
 from euclideanizing_flows.plot_utils import *
 from euclideanizing_flows.data_utils import LASA
+from euclideanizing_flows.concat_dataset import LASAConcatenated
 import argparse
 
 def euclidean_distance(point1, point2):
@@ -32,6 +33,7 @@ parser.add_argument('--data-name', type=str, default='GShape', help='name of the
 args = parser.parse_args()
 
 data_name = args.data_name
+data_names = ['Trapezoid', 'GShape']
 test_learner_model = True
 load_learner_model = False
 coupling_network_type = 'rffn'
@@ -83,7 +85,8 @@ if seed is not None:
 kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
 
 print('Loading dataset...')
-dataset = LASA(data_name=data_name)
+# dataset = LASA(data_name = data_name) for the normal LASA dataset
+dataset = LASAConcatenated(data_names=data_names)
 goal = dataset.goal
 idx = dataset.idx
 
