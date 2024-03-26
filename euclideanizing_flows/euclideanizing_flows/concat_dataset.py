@@ -65,4 +65,5 @@ class LASAConcatenated:
 data_names = ['Trapezoid', 'GShape']
 lasa_conc = LASAConcatenated(data_names)
 print("Goal:", lasa_conc.goal)
+print('Dimensions:', np.shape(lasa_conc))
 lasa_conc.plot_data()
