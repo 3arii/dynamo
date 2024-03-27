@@ -114,10 +114,12 @@ class NormalisedStackedLASADataPendulum(Dataset):
         data = np.load(dataset_path)
         X = data['X']
         Y = data['Y']
+        pos_eq = data.get('pos_eq')  # Safely attempt to load 'pos_eq'
 
-        # Convert to torch tensors and normalize
+        # Convert to torch tensors
         self.X = torch.tensor(X, dtype=torch.float32)
         self.Y = torch.tensor(Y, dtype=torch.float32)
+        self.pos_eq = torch.tensor(pos_eq, dtype=torch.float32) if pos_eq is not None else None
 
         # Normalize X
         self.X_mean = self.X.mean(dim=0)
