@@ -110,33 +110,32 @@ class StackedLASAData(Dataset):
 
 class NormalisedStackedLASADataPendulum(Dataset):
     def __init__(self, dataset_path):
-        # Load data from the NPZ file
         data = np.load(dataset_path)
-        X = data['X']
-        Y = data['Y']
-        pos_eq = data.get('pos_eq')  # Safely attempt to load 'pos_eq'
-
+        X = data['X']  # Assuming this is position data
+        Y = data['Y']  # Assuming this represents velocity or other target data
+        
         # Convert to torch tensors
-        self.X = torch.tensor(X, dtype=torch.float32)
-        self.Y = torch.tensor(Y, dtype=torch.float32)
-        self.pos_eq = torch.tensor(pos_eq, dtype=torch.float32) if pos_eq is not None else None
-
-        # Normalize X
-        self.X_mean = self.X.mean(dim=0)
-        self.X_std = self.X.std(dim=0)
-        self.X = (self.X - self.X_mean) / self.X_std
-
-        # Normalize Y
-        self.Y_mean = self.Y.mean(dim=0)
-        self.Y_std = self.Y.std(dim=0)
-        self.Y = (self.Y - self.Y_mean) / self.Y_std
+        self.pos = torch.tensor(X, dtype=torch.float32)
+        self.vel = torch.tensor(Y, dtype=torch.float32)
+        
+        # Normalize position data
+        self.pos_mean = self.pos.mean(dim=0)
+        self.pos_std = self.pos.std(dim=0)
+        self.pos = (self.pos - self.pos_mean) / self.pos_std
+        
+        # Normalize velocity data similarly if applicable
+        # Adapt if velocity has its own mean/std. Using pos mean/std for simplicity
+        self.vel = (self.vel - self.pos_mean) / self.pos_std
+        
+        # Calculate equilibrium position (pos_eq) - example calculation
+        # Here, simply taking the mean as a placeholder. Adjust based on actual requirements.
+        self.pos_eq = self.pos_mean.unsqueeze(0)  # Ensure it is 2D for subscripting
 
     def __len__(self):
-        return len(self.X)
+        return len(self.pos)
 
     def __getitem__(self, idx):
-        # Return normalized state (X) and target (Y) vectors
-        return self.X[idx], self.Y[idx]
+        return self.pos[idx], self.vel[idx]
 
     def standardize_X(self, X):
         return (X - self.X_mean) / self.X_std
@@ -151,26 +150,39 @@ class NormalisedStackedLASADataPendulum(Dataset):
         return Y * self.Y_std + self.Y_mean
     
 class NormalisedStackedLASAData(StackedLASAData):
-    def __init__(self, dataset_names, start = 15, num_demos = None):
-        super().__init__(dataset_names, start, num_demos)
-        
-        # normalise pos data
+    def __init__(self, dataset_path):
+        data = np.load(dataset_path)
+        X = data['X']  # Position data
+        Y = data['Y']  # Assuming this is velocity or some target
 
+        # Convert to torch tensors
+        self.pos = torch.tensor(X, dtype=torch.float32)
+        self.vel = torch.tensor(Y, dtype=torch.float32)
 
+        # Assume pos_eq needs to be defined; here we use a placeholder approach
+        # This should be adapted based on how pos_eq is actually determined for your case
+        if 'pos_eq' in data:
+            self.pos_eq = torch.tensor(data['pos_eq'], dtype=torch.float32)
+        else:
+            # Placeholder if pos_eq is not directly available; adapt as necessary
+            self.pos_eq = torch.zeros_like(self.pos[0:1])
+
+        # Normalize position data
         self.pos_mean = self.pos.mean(dim=0)
         self.pos_std = self.pos.std(dim=0)
-        # assert pos_mean is of size [len(dataset_names) * 2]
-
-
-        assert self.pos_mean.shape[0] == len(dataset_names) * 2
-
-
         self.pos = (self.pos - self.pos_mean) / self.pos_std
 
-        self.vel = self.vel / self.pos_std
+        # Normalize velocity data similarly if applicable
+        self.vel = (self.vel - self.pos_mean) / self.pos_std  # Adapt if vel has its own mean/std
 
-
+        # Normalize equilibrium position
         self.pos_eq = (self.pos_eq - self.pos_mean) / self.pos_std
+
+    def __len__(self):
+        return len(self.pos)
+
+    def __getitem__(self, idx):
+        return self.pos[idx], self.vel[idx]
 
     def standardize_pos(self, pos):
         return (pos - self.pos_mean) / self.pos_std

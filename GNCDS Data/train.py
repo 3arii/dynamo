@@ -68,7 +68,7 @@ dataset = NormalisedStackedLASADataPendulum(dataset_path)
 train_loader = DataLoader(dataset, batch_size=200, shuffle=True)
 
 # Training parameters
-data_dim = dataset.X.shape[1]  # Assuming X is 2D: [samples, features]
+data_dim = dataset.pos.shape[1]  # Assuming X is 2D: [samples, features]
 latent_dim = data_dim  # Adjust according to your model's architecture
 flow_steps = 2  # Example flow steps
 
@@ -77,7 +77,7 @@ save_folder = "Save Folder"
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)
 
-epochs = 1  # Adjust according to your needs
+epochs = 100  # Adjust according to your needs
 lr = 0.001  # Learning rate
 
 # Ensure the loss.txt file exists
@@ -126,27 +126,24 @@ epoch = 0
     
 losses = []
 
-for e in range(epoch+1, epochs):
-    total_loss  =0
+for e in range(epoch+1, epochs + 1):
+    total_loss = 0
 
-    for i, (x, x_dot, x_eq, x_dot_eq) in tqdm(enumerate(train_loader), total = len(train_loader)):
-        # compute loss
-        x = x
-        x_dot = x_dot
-        
-        # model.set_x_eq(x_eq)
+    for i, (x, x_dot) in tqdm(enumerate(train_loader), total=len(train_loader)):
+        # Your model's forward pass to compute predictions
         x_dot_pred = model_t(x)
-
         
+        # Compute loss
         loss = torch.nn.MSELoss()(x_dot_pred, x_dot)
-        # backward pass
+
+        # Backward pass and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
         total_loss += loss.item()
-        # if i >= max_batches:
-        #     break
-    print("Epoch: ", e, "Loss: ", total_loss/ len(train_loader))
+
+    print("Epoch: ", e, "Loss: ", total_loss / len(train_loader))
     #write loss to file
     with open(loss_text_file, 'a') as f:
         f.write(f'{e}, {total_loss/ len(train_loader)}\n')
