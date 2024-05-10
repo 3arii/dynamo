@@ -3,6 +3,7 @@ import roboticstoolbox as rtb
 import spatialmath as sm
 import numpy as np
 import csv
+from numpy import random
 
 velocity_vector_list = []
 filename = "data.csv"
@@ -21,16 +22,19 @@ def move_robot(dt, velocity_list, arrived = False):
 
     while not arrived:
         v, arrived = rtb.p_servo(panda.fkine(panda.q), Tep, 1)
+        print(f"Velocity: {v}")
         panda.qd = np.linalg.pinv(panda.jacobe(panda.q)) @ v
         env.step(dt)
 
 # Task 4 Example
-example_list = [0.2, 0.2, 0]
+# example_list = [0.1, 1, 0.1]
+# move_robot(0.05, example_list);
 
 
 def multiple_movement(dt, multiple_velocity_list):
     for velocity_vector in multiple_velocity_list:
         Tep = panda.fkine(panda.q) * sm.SE3.Trans(velocity_vector[0], velocity_vector[1], velocity_vector[2])
+        print(f"Tep:{Tep}")
         arrived = False
         # 1. Understand every value of a matrix anb var.
         # 2. Understand the linear algebra in the code.
@@ -46,11 +50,11 @@ def multiple_movement(dt, multiple_velocity_list):
 
                 # Write each row from the array
                 for row in velocity_vector_list:
-                    print(row)
+                    # print(row)
                     writer.writerow(row)  
     print(f"Data has been written to {filename}")              
 
 
 # Task 5 Example
-example_list_2 = [[0.2, 0.2, 0] , [0.1, 0.1, 0.45]]
-multiple_movement(0.05, example_list_2)
+example_list_2 = [[0.2, 0.2, 0.45] , [0.1, 0.1, 0.45], [0.1, 0.1, 0.5]]
+multiple_movement(0.01, example_list_2)

@@ -61,8 +61,11 @@ def follow_lasa_trajectory(dataset_name, start=15, end=None, dt=0.05, initial_ga
     initial_distance = np.linalg.norm(panda.fkine(panda.q).t - pos_3d[:, 0])
     final_point = pos_3d[:, -1]
 
-    for p in pos_3d.T:
+    for i, p in enumerate(pos_3d.T):
+        print(i)
+            
         Tep = sm.SE3(p[0], p[1], p[2])
+        print(f"Tep:{Tep}")
         start_time = time.time()
         arrived = False
 
