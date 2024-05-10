@@ -32,7 +32,9 @@ def multiple_movement(dt, multiple_velocity_list):
     for velocity_vector in multiple_velocity_list:
         Tep = panda.fkine(panda.q) * sm.SE3.Trans(velocity_vector[0], velocity_vector[1], velocity_vector[2])
         arrived = False
-
+        # 1. Understand every value of a matrix anb var.
+        # 2. Understand the linear algebra in the code.
+        # 3. Teporian?
         while not arrived:
             v, arrived = rtb.p_servo(panda.fkine(panda.q), Tep, gain=1.0, threshold=0.2)  # Adjusted threshold
             panda.qd = np.linalg.pinv(panda.jacobe(panda.q)) @ v
@@ -52,5 +54,3 @@ def multiple_movement(dt, multiple_velocity_list):
 # Task 5 Example
 example_list_2 = [[0.2, 0.2, 0] , [0.1, 0.1, 0.45]]
 multiple_movement(0.05, example_list_2)
-
-env.hold()
