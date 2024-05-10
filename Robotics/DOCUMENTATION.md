@@ -219,3 +219,42 @@ table.print()
 
 - [Robotics Toolbox Documentation](https://petercorke.com/toolboxes/robotics-toolbox/)
 - [GitHub Repository](https://github.com/petercorke/roboticstoolbox-python)
+
+### Additional Function Descriptions
+
+#### `Tep = panda.fkine(panda.q) * sm.SE3.Trans(velocity_vector[0], velocity_vector[1], velocity_vector[2])`
+
+- **`fkine(q)`**:
+
+  - This is the "Forward Kinematics" function of the robot object.
+  - It takes a set of joint angles `q` as input and computes the pose of the end effector.
+  - Returns a homogeneous transformation matrix that represents the pose of the end effector in 3D space.
+
+- **`sm.SE3.Trans(x, y, z)`**:
+  - This creates a translation transformation matrix along the specified axes.
+  - Parameters `x`, `y`, and `z` are translation distances along their respective axes.
+  - The multiplication `panda.fkine(...) * sm.SE3.Trans(...)` results in a target pose `Tep`, which shifts the end effector by the specified velocity vector.
+
+#### `v, arrived = rtb.p_servo(panda.fkine(panda.q), Tep, gain=1.0, threshold=0.2)`
+
+- **`p_servo`**:
+  - This is a proportional position servo controller that computes the required velocity to move the robot towards a desired end-effector pose.
+  - Parameters:
+    - `current_pose`: The current pose of the robot's end effector.
+    - `target_pose`: The desired target pose for the end effector.
+    - `gain`: The proportional gain that controls the rate of convergence.
+    - `threshold`: Specifies when the servo should consider the robot to have "arrived" at the target.
+  - Returns:
+    - `v`: The computed velocity vector required to move the end effector towards the target.
+    - `arrived`: A boolean indicating whether the end effector has reached the target.
+
+#### `panda.qd = np.linalg.pinv(panda.jacobe(panda.q)) @ v`
+
+- **`jacobe(q)`**:
+
+  - Computes the Jacobian matrix for the end effector, which maps joint velocities to end-effector velocities.
+  - Used here to compute the required joint velocities to achieve the desired end-effector velocity.
+
+- **`np.linalg.pinv(...)`**:
+  - This is the "pseudo-inverse" function from NumPy, which provides a way to solve the linear system if the Jacobian matrix is non-square or singular.
+  - Allows us to compute the best-fit joint velocities that will achieve the desired end-effector velocity `v`.
